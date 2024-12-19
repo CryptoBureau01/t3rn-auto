@@ -21,8 +21,8 @@ async function bridgeETH(transactionNumber) {
     // Initialize the bridge contract
     const bridgeContract = new ethers.Contract(bridgeContractAddress, bridgeABI, wallet);
 
-    // Amount to bridge (e.g., 0.01 ETH)
-    const amount = ethers.parseEther("0.01");
+    // Amount to bridge (e.g., 0.11 ETH)
+    const amount = ethers.parseEther("0.11");
 
     console.log(`Starting transaction ${transactionNumber}: Bridging ETH...`);
     
