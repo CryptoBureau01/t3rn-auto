@@ -6,7 +6,7 @@ if %errorlevel%==0 (
     echo Python sudah terinstall.
     notepad "./.env"
     python -m pip install -r windows.txt >nul 2>nul
-    echo menjalankan script main.py
+    echo cryptobureau script main.py
     python main.py
     goto end
 )
@@ -16,12 +16,12 @@ if %errorlevel%==0 (
     echo Python sudah terinstall.
     notepad "./.env"
     python3 -m pip install -r windows.txt >nul 2>nul
-    echo menjalankan script main.py
+    echo cryptobureau script main.py
     python3 main.py
     goto end
 )
 
-echo Python tidak ditemukan. Mengunduh dan menginstal Python...
+echo Python T3rn cryptobureau Python...
 
 curl -o python-installer.exe https://www.python.org/ftp/python/3.12.6/python-3.12.6-amd64.exe
 
