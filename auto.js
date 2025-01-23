@@ -137,11 +137,89 @@ setup_t3rn_swap() {
 }
 
 
+handle_private_key() {
+    ENV_FILE="/root/t3rn-swap/.env"
+
+    # Check if the .env file exists
+    if [ -f "$ENV_FILE" ]; then
+        # Search for an existing PRIVATE_KEY in the .env file
+        EXISTING_KEY=$(grep -E "^PRIVATE_KEY=" "$ENV_FILE" | cut -d '=' -f2)
+
+        if [ -n "$EXISTING_KEY" ]; then
+            echo "PRIVATE_KEY already exists: $EXISTING_KEY"
+            echo "No need to provide a new private key."
+            return
+        else
+            echo "PRIVATE_KEY is not present. Please provide a new private key."
+        fi
+    else
+        echo ".env file does not exist. Creating a new one with default values."
+        # Create a new .env file with default values
+        cat <<EOF > "$ENV_FILE"
+PRIVATE_KEY=
+BASE_RPC=https://base-sepolia-rpc.publicnode.com
+BLAST_RPC=https://sepolia.blast.io
+ARB_RPC=https://sepolia-rollup.arbitrum.io/rpc
+OP_RPC=https://sepolia.optimism.io
+EOF
+    fi
+
+    # Loop until the user enters a valid private key
+    while true; do
+        echo "Enter your new private key (must start with '0x'):"
+        read -r PRIVATE_KEY
+
+        # Check if the private key starts with "0x"
+        if [[ $PRIVATE_KEY == 0x* ]]; then
+            break
+        else
+            echo "Invalid private key! Ensure it starts with '0x'. Please try again."
+        fi
+    done
+
+    # Update or append the PRIVATE_KEY in the .env file
+    if grep -q "^PRIVATE_KEY=" "$ENV_FILE"; then
+        sed -i.bak "s/^PRIVATE_KEY=.*/PRIVATE_KEY=$PRIVATE_KEY/" "$ENV_FILE"
+    else
+        echo "PRIVATE_KEY=$PRIVATE_KEY" >> "$ENV_FILE"
+    fi
+
+    echo "The private key has been successfully saved to $ENV_FILE."
+
+    # Call the master function
+    master
+}
 
 
+run_auto_Swap() {
+    # Define the directory where the script is located
+    FOLDER="/root/t3rn-swap"
+    SCREEN_NAME="t3rn-swap"
+    
+    # Change to the specified directory
+    if [ -d "$FOLDER" ]; then
+        cd "$FOLDER" || exit
+    else
+        echo "Directory $FOLDER does not exist!"
+        exit 1
+    fi
 
+    # Check if the screen session with the name already exists
+    if screen -list | grep -q "$SCREEN_NAME"; then
+        echo "Screen session named '$SCREEN_NAME' is already running."
+        echo "To access the screen session, use: screen -r $SCREEN_NAME"
+        return
+    else
+        # Create and start a new screen session if not already running
+        echo "Starting a new screen session named '$SCREEN_NAME'..."
+        screen -dmS "$SCREEN_NAME" bash -c "python3 main.py; exec bash"
+        echo "The Python script 'main.py' is now running inside the screen session named '$SCREEN_NAME'."
+        echo "To open the screen session, use: screen -r $SCREEN_NAME"
+    fi
 
-
+    # Call the master function
+    master
+}
 
 
 
@@ -153,21 +231,16 @@ master() {
     print_info ""
     print_info "1. Install-Dependency"
     print_info "2. Setup-T3rn-Swap"
-    print_info "3. "
-    print_info "4. "
-    print_info "5. "
-    print_info "6. "
-    print_info "7. "
-    print_info "8. "
-    print_info "9. "
-    
+    print_info "3. Set-Private-Key"
+    print_info "4. Run-Auto-Swap"
+    print_info "5. Exit"
     print_info ""
     print_info "==============================="
     print_info " Created By : CB-Master "
     print_info "==============================="
     print_info ""
     
-    read -p "Enter your choice (1 or 3): " user_choice
+    read -p "Enter your choice (1 or 5): " user_choice
 
     case $user_choice in
         1)
@@ -177,21 +250,12 @@ master() {
             setup_t3rn_swap
             ;;
         3) 
-
+            handle_private_key
             ;;
         4)
-
+            run_auto_Swap
             ;;
         5)
-
-            ;;
-        6)
-
-            ;;
-        7)
-
-            ;;
-        8)
             exit 0  # Exit the script after breaking the loop
             ;;
         *)
