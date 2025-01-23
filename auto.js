@@ -1,54 +1,174 @@
-const { ethers } = require("ethers");
+# !/bin/bash
 
-// Configuration
-const arbSepoliaRPC = "https://endpoints.omniatech.io/v1/arbitrum/sepolia/public";
-const baseSepoliaRPC = "https://sepolia.base.org";
-const bridgeContractAddress = "0x8D86c3573928CE125f9b2df59918c383aa2B514D";
-const privateKey = "YOUR_PRIVATE_KEY"; // Replace with your wallet's private key
+curl -s https://raw.githubusercontent.com/CryptoBureau01/logo/main/logo.sh | bash
+sleep 5
 
-// Setup Providers and Wallet
-const arbProvider = new ethers.JsonRpcProvider(arbSepoliaRPC);
-const wallet = new ethers.Wallet(privateKey, arbProvider);
+# Function to print info messages
+print_info() {
+    echo -e "\e[32m[INFO] $1\e[0m"
+}
 
-// Bridge Contract ABI
-const bridgeABI = [
-  "function bridgeETH(uint256 amount) public payable returns (bool)"
-];
+# Function to print error messages
+print_error() {
+    echo -e "\e[31m[ERROR] $1\e[0m"
+}
 
-// Function to Bridge ETH
-async function bridgeETH(transactionNumber) {
-  try {
-    // Initialize the bridge contract
-    const bridgeContract = new ethers.Contract(bridgeContractAddress, bridgeABI, wallet);
 
-    // Amount to bridge (e.g., 0.11 ETH)
-    const amount = ethers.parseEther("0.11");
 
-    console.log(`Starting transaction ${transactionNumber}: Bridging ETH...`);
+#Function to check system type and root privileges
+master_fun() {
+    echo "Checking system requirements..."
+
+    # Check if the system is Ubuntu
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        if [ "$ID" != "ubuntu" ]; then
+            echo "This script is designed for Ubuntu. Exiting."
+            exit 1
+        fi
+    else
+        echo "Cannot detect operating system. Exiting."
+        exit 1
+    fi
+
+    # Check if the user is root
+    if [ "$EUID" -ne 0 ]; then
+        echo "You are not running as root. Please enter root password to proceed."
+        sudo -k  # Force the user to enter password
+        if sudo true; then
+            echo "Switched to root user."
+        else
+            echo "Failed to gain root privileges. Exiting."
+            exit 1
+        fi
+    else
+        echo "You are running as root."
+    fi
+
+    echo "System check passed. Proceeding to package installation..."
+}
+
+
+# Function to install dependencies
+install_dependency() {
+    print_info "<=========== Install Dependency ==============>"
+    print_info "Updating and upgrading system packages, and installing curl..."
+    sudo apt update && sudo apt upgrade -y && sudo apt install git wget curl -y 
+
+    # Check if Docker is install
+    print_info "Installing Docker..."
+    # Download and run the custom Docker installation script
+     wget https://raw.githubusercontent.com/CryptoBureau01/packages/main/docker.sh && chmod +x docker.sh && ./docker.sh
+     # Check for installation errors
+     if [ $? -ne 0 ]; then
+        print_error "Failed to install Docker. Please check your system for issues."
+        exit 1
+     fi
+     # Remove the docker.sh file after installation
+     rm -f docker.sh
+
+
+    # Docker Composer Setup
+    print_info "Installing Docker Compose..."
+    # Download and run the custom Docker Compose installation script
+    wget https://raw.githubusercontent.com/CryptoBureau01/packages/main/docker-compose.sh && chmod +x docker-compose.sh && ./docker-compose.sh
+    # Check for installation errors
+    if [ $? -ne 0 ]; then
+       print_error "Failed to install Docker Compose. Please check your system for issues."
+       exit 1
+    fi
+    # Remove the docker-compose.sh file after installation
+    rm -f docker-compose.sh
+
+
+    # Check if geth is installed, if not, install it
+    if ! command -v geth &> /dev/null
+      then
+         print_info "Geth is not installed. Installing now..."
     
-    // Estimate gas and send the transaction
-    const gasEstimate = await bridgeContract.estimateGas.bridgeETH(amount, { value: amount });
-    const bridgeTx = await bridgeContract.bridgeETH(amount, {
-      value: amount,
-      gasLimit: gasEstimate,
-    });
+    # Geth install
+    snap install geth
+    
+    print_info "Geth installation complete."
+    else
+        print_info "Geth is already installed."
+    fi
 
-    console.log(`Transaction ${transactionNumber} sent. Waiting for confirmation...`);
-    await bridgeTx.wait();
-    console.log(`Transaction ${transactionNumber} successful: ${bridgeTx.hash}`);
-  } catch (error) {
-    console.error(`Error in transaction ${transactionNumber}:`, error);
-  }
+    # Print Docker and Docker Compose versions to confirm installation
+    print_info "Checking Docker version..."
+    docker --version
+
+     print_info "Checking Docker Compose version..."
+     docker-compose --version
+
+    # Call the uni_menu function to display the menu
+    master
 }
 
-// Execute 100 Transactions
-async function executeMultipleTransactions() {
-  for (let i = 1; i <= 100; i++) {
-    await bridgeETH(i);
-    // Optional: Add a delay between transactions if needed
-    // await new Promise((resolve) => setTimeout(resolve, 5000)); // 5-second delay
-  }
+
+
+
+
+
+
+
+
+
+# Function to display menu and prompt user for input
+master() {
+    print_info "==============================="
+    print_info "    ABC Node Tool Menu      "
+    print_info "==============================="
+    print_info ""
+    print_info "1. Install-Dependency"
+    print_info "2. Setup-Citrea"
+    print_info "3. "
+    print_info "4. "
+    print_info "5. "
+    print_info "6. "
+    print_info "7. "
+    print_info "8. "
+    print_info "9. "
+    
+    print_info ""
+    print_info "==============================="
+    print_info " Created By : CB-Master "
+    print_info "==============================="
+    print_info ""
+    
+    read -p "Enter your choice (1 or 3): " user_choice
+
+    case $user_choice in
+        1)
+            install_dependency
+            ;;
+        2)
+            setup_node
+            ;;
+        3) 
+
+            ;;
+        4)
+
+            ;;
+        5)
+
+            ;;
+        6)
+
+            ;;
+        7)
+
+            ;;
+        8)
+            exit 0  # Exit the script after breaking the loop
+            ;;
+        *)
+            print_error "Invalid choice. Please enter 1 or 3 : "
+            ;;
+    esac
 }
 
-// Start the process
-executeMultipleTransactions();
+# Call the uni_menu function to display the menu
+master_fun
+master
