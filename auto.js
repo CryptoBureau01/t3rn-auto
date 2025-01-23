@@ -49,59 +49,51 @@ master_fun() {
 }
 
 
-# Function to install dependencies
 install_dependency() {
     print_info "<=========== Install Dependency ==============>"
-    print_info "Updating and upgrading system packages, and installing curl..."
-    sudo apt update && sudo apt upgrade -y && sudo apt install git wget curl -y 
-
-    # Check if Docker is install
-    print_info "Installing Docker..."
-    # Download and run the custom Docker installation script
-     wget https://raw.githubusercontent.com/CryptoBureau01/packages/main/docker.sh && chmod +x docker.sh && ./docker.sh
-     # Check for installation errors
-     if [ $? -ne 0 ]; then
-        print_error "Failed to install Docker. Please check your system for issues."
-        exit 1
-     fi
-     # Remove the docker.sh file after installation
-     rm -f docker.sh
-
-
-    # Docker Composer Setup
-    print_info "Installing Docker Compose..."
-    # Download and run the custom Docker Compose installation script
-    wget https://raw.githubusercontent.com/CryptoBureau01/packages/main/docker-compose.sh && chmod +x docker-compose.sh && ./docker-compose.sh
-    # Check for installation errors
+    
+    # Update and upgrade system packages
+    print_info "Updating and upgrading system packages, and installing required tools..."
+    sudo apt update && sudo apt upgrade -y && sudo apt install -y screen git wget curl 
+    
+    # Install Python3 using a custom script
+    print_info "Installing Python3..."
+    wget https://raw.githubusercontent.com/CryptoBureau01/packages/main/python3.10.sh -O python3.10.sh && chmod +x python3.10.sh && ./python3.10.sh
+    
+    # Check if the Python installation script executed successfully
     if [ $? -ne 0 ]; then
-       print_error "Failed to install Docker Compose. Please check your system for issues."
-       exit 1
+        print_error "Failed to install Python3. Please check your system for issues."
+        exit 1
     fi
-    # Remove the docker-compose.sh file after installation
-    rm -f docker-compose.sh
-
-
-    # Check if geth is installed, if not, install it
-    if ! command -v geth &> /dev/null
-      then
-         print_info "Geth is not installed. Installing now..."
     
-    # Geth install
-    snap install geth
-    
-    print_info "Geth installation complete."
+    # Remove the Python installation script after execution
+    rm -f python3.10.sh
+
+    # Install pip for Python3
+    print_info "Installing pip for Python3..."
+    sudo apt install -y python3-pip
+
+    # Create and activate a Python virtual environment
+    if [ ! -d "venv" ]; then
+        print_info "Creating a Python virtual environment..."
+        python3 -m venv venv
     else
-        print_info "Geth is already installed."
+        print_info "Virtual environment already exists. Skipping creation."
+    fi
+    source venv/bin/activate
+
+    # Install dependencies from linux.txt if available
+    if [ -f "linux.txt" ]; then
+        print_info "linux.txt found. Installing dependencies..."
+        pip install --upgrade pip
+        pip install -r linux.txt
+    else
+        print_error "linux.txt not found! Exiting installation process."
+        exit 1
     fi
 
-    # Print Docker and Docker Compose versions to confirm installation
-    print_info "Checking Docker version..."
-    docker --version
-
-     print_info "Checking Docker Compose version..."
-     docker-compose --version
-
-    # Call the uni_menu function to display the menu
+    # Call the master function
+    print_info "Dependency installation completed. Returning to the main menu..."
     master
 }
 
@@ -114,11 +106,13 @@ install_dependency() {
 
 
 
+
+
 # Function to display menu and prompt user for input
 master() {
-    print_info "==============================="
-    print_info "    ABC Node Tool Menu      "
-    print_info "==============================="
+    print_info "=================================="
+    print_info "    T3rn Auto Swap Tool Menu      "
+    print_info "=================================="
     print_info ""
     print_info "1. Install-Dependency"
     print_info "2. Setup-Citrea"
