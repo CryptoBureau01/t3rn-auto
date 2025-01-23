@@ -98,6 +98,43 @@ install_dependency() {
 }
 
 
+setup_t3rn_swap() {
+    local FOLDER_PATH="/root/t3rn-swap"
+    local REPO_URL="https://github.com/CryptoBureau01/t3rn-auto.git"
+
+    print_info "<=========== Setting Up t3rn-swap Folder ==============>"
+
+    # Check if the folder exists
+    if [ -d "$FOLDER_PATH" ]; then
+        print_info "Folder $FOLDER_PATH already exists. Checking its contents..."
+    else
+        print_info "Folder $FOLDER_PATH does not exist. Creating it..."
+        mkdir -p "$FOLDER_PATH"
+    fi
+
+    # Navigate to the folder
+    cd "$FOLDER_PATH" || {
+        print_error "Failed to navigate to $FOLDER_PATH. Exiting..."
+        exit 1
+    }
+
+    # Check if the repository is already cloned
+    if [ -d "$FOLDER_PATH/.git" ]; then
+        print_info "Repository already cloned in $FOLDER_PATH. Pulling latest changes..."
+        git pull origin main
+    else
+        print_info "Cloning repository $REPO_URL into $FOLDER_PATH..."
+        git clone "$REPO_URL" .
+        
+        if [ $? -ne 0 ]; then
+            print_error "Failed to clone repository. Please check the URL or your network connection."
+            exit 1
+        fi
+    fi
+
+    print_info "t3rn-swap setup is complete."
+    master
+}
 
 
 
@@ -115,7 +152,7 @@ master() {
     print_info "=================================="
     print_info ""
     print_info "1. Install-Dependency"
-    print_info "2. Setup-Citrea"
+    print_info "2. Setup-T3rn-Swap"
     print_info "3. "
     print_info "4. "
     print_info "5. "
@@ -137,7 +174,7 @@ master() {
             install_dependency
             ;;
         2)
-            setup_node
+            setup_t3rn_swap
             ;;
         3) 
 
